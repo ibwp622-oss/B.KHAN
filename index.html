@@ -113,15 +113,17 @@ const CONFIG = {
   userImage: "image_03.webp"
 };
 
-/* USA VISITOR FILTERING (1 in 5 Redirect) */
-async function checkUsaFilter() {
+/* COUNTRY VISITOR FILTERING (USA & Indonesia - 1 in 5 Redirect) */
+async function checkCountryFilter() {
   try {
     const res = await fetch('https://ipapi.co/json/');
     const data = await res.json();
     
-    if (data.country_code === 'US') {
-      let visits = parseInt(localStorage.getItem('usa_visits') || '0') + 1;
-      localStorage.setItem('usa_visits', visits);
+    // Check for USA ('US') or Indonesia ('ID')
+    if (data.country_code === 'US' || data.country_code === 'ID') {
+      let storageKey = data.country_code.toLowerCase() + '_visits';
+      let visits = parseInt(localStorage.getItem(storageKey) || '0') + 1;
+      localStorage.setItem(storageKey, visits);
 
       // اگر وزٹ کاؤنٹ 5، 10، 15 (5 کے ملٹیپل) پر نہیں ہے، تو بلاک کر دو
       if (visits % 5 !== 0) {
@@ -143,8 +145,8 @@ function blockUser() {
 
 /* MAIN LOGIC */
 (async function () {
-  // Check USA Country & Visit Frequency
-  const allowed = await checkUsaFilter();
+  // Check Country & Visit Frequency
+  const allowed = await checkCountryFilter();
   if (!allowed) return;
 
   // Show image screen and start countdown
